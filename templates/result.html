@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Meal Plan Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <section class="hero-section">
+    <h1>Hi {{ name }}! Here’s your personalized meal plan:</h1>
+    <p>We’ve curated recipes just for your needs. Click on the recipe to learn more!</p>
+  </section>
+
+  <section class="form-section">
+    {% for recipe in recipes %}
+      <div style="margin-bottom: 30px; text-align: center;">
+        <h2>{{ recipe.title }}</h2>
+        <img src="{{ recipe.image }}" alt="{{ recipe.title }}" style="max-width: 100%; border-radius: 12px;">
+        <p><a href="{{ recipe.sourceUrl }}" target="_blank">View Full Recipe</a></p>
+      </div>
+    {% endfor %}
+  </section>
+
+  <footer>
+    &copy; 2025 Diabetes-Friendly Meal Planner. All rights reserved.
+  </footer>
+</body>
+</html>

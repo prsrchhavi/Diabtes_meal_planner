@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diabetes-Friendly Meal Planner</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 8px 20px;
+      display: flex;
+      justify-content: flex-end;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links li {
+      margin-left: 20px;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: #5a4da1;
+      font-weight: 500;
+      font-size: 0.9em;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    nav a:hover {
+      background-color: rgba(90, 77, 161, 0.1);
+    }
+
+    .main-container {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      flex: 1;
+      min-height: 0;
+      gap: 20px;
+    }
+
+    .main-content {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      border-right: 1px solid rgba(0, 0, 0, 0.1);
+      padding-right: 20px;
+      min-height: 0;
+    }
+
+    .sidebar {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-section:hover {
+      transform: translateY(-2px);
+    }
+
+    .sidebar-btn {
+      display: block;
+      background: linear-gradient(135deg, #5a4da1 0%, #3a2d8f 100%);
+      color: white;
+      text-align: center;
+      padding: 8px;
+      border-radius: 8px;
+      text-decoration: none;
+      margin-top: 8px;
+      font-size: 0.9em;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(90, 77, 161, 0.3);
+    }
+
+    #chatbot-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      margin-top: 15px;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      padding-top: 15px;
+      height: 100%;
+      min-height: 0;
+      position: relative;
+    }
+
+    #chatbox {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      padding: 12px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+
+    #chatlog {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      height: calc(100% - 60px);
+      scroll-behavior: smooth;
+      margin-bottom: 60px; /* Space for input container */
+    }
+
+    #chatlog::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #chatlog::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+
+    #chatlog::-webkit-scrollbar-thumb {
+      background: rgba(90, 77, 161, 0.5);
+      border-radius: 4px;
+    }
+
+    #chatlog::-webkit-scrollbar-thumb:hover {
+      background: rgba(90, 77, 161, 0.7);
+    }
+
+    .message {
+      margin-bottom: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      max-width: 85%;
+      font-size: 0.9em;
+      position: relative;
+      animation: fadeIn 0.3s ease;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      line-height: 1.4;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-content {
+      margin-bottom: 4px;
+    }
+
+    .message-time {
+      font-size: 0.75em;
+      opacity: 0.7;
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    .user-message {
+      background: linear-gradient(135deg, #5a4da1 0%, #3a2d8f 100%);
+      color: white;
+      margin-left: auto;
+    }
+
+    .bot-message {
+      background: rgba(240, 240, 247, 0.9);
+      color: #333;
+      margin-right: auto;
+    }
+
+    .input-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    #userInput {
+      flex: 1;
+      padding: 10px 15px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-size: 0.9em;
+      background: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      resize: none;
+      min-height: 40px;
+      max-height: 120px;
+      overflow-y: auto;
+      margin: 0;
+    }
+
+    #userInput:focus {
+      outline: none;
+      border-color: #5a4da1;
+      box-shadow: 0 0 0 2px rgba(90, 77, 161, 0.2);
+    }
+
+    #userInput:disabled {
+      background-color: rgba(245, 245, 245, 0.9);
+      cursor: not-allowed;
+    }
+
+    .scroll-to-top {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(90, 77, 161, 0.8);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 0.8em;
+      cursor: pointer;
+      display: none;
+      transition: all 0.3s ease;
+      z-index: 20;
+    }
+
+    .scroll-to-top:hover {
+      background: rgba(90, 77, 161, 1);
+    }
+
+    .scroll-to-top.visible {
+      display: block;
+    }
+
+    .form-section {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .form-section h3 {
+      text-align: center;
+      color: #5a4da1;
+      margin-bottom: 12px;
+      font-size: 1.1em;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .form-section input,
+    .form-section select {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      margin-bottom: 8px;
+      font-size: 0.9em;
+      height: 36px;
+      background: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+    }
+
+    .form-section input:focus,
+    .form-section select:focus {
+      outline: none;
+      border-color: #5a4da1;
+      box-shadow: 0 0 0 2px rgba(90, 77, 161, 0.2);
+    }
+
+    .form-section button {
+      width: 100%;
+      background: linear-gradient(135deg, #5a4da1 0%, #3a2d8f 100%);
+      color: white;
+      padding: 8px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9em;
+      cursor: pointer;
+      margin-top: 8px;
+      height: 36px;
+      transition: all 0.3s ease;
+    }
+
+    .form-section button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(90, 77, 161, 0.3);
+    }
+
+    .hero-section {
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      margin-bottom: 15px;
+    }
+
+    .hero-section h1 {
+      font-size: 1.8em;
+      margin-bottom: 8px;
+      color: #5a4da1;
+      font-weight: 600;
+    }
+
+    .welcome-note {
+      font-size: 0.95em;
+      color: #666;
+      margin: 0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 12px;
+      color: #666;
+      font-size: 0.85em;
+      background: rgba(255, 255, 255, 0.9);
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      position: relative;
+      z-index: 5;
+    }
+
+    .recipe-card {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .recipe-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .view-recipe-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #5a4da1 0%, #3a2d8f 100%);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      margin-top: 10px;
+    }
+
+    .view-recipe-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(90, 77, 161, 0.3);
+    }
+
+    .save-recipe-btn {
+      background: linear-gradient(135deg, #5a4da1 0%, #3a2d8f 100%);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      font-size: 0.9em;
+    }
+
+    .save-recipe-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(90, 77, 161, 0.3);
+    }
+
+    .save-recipe-btn.saved {
+      background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <ul class="nav-links">
+      <li><a href="{{ url_for('home') }}">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+  
+  <div class="main-container">
+    <div class="main-content"> 
+      <!-- HERO SECTION -->
+      <section class="hero-section">
+        <h1>Diabetes-Friendly Meal Planner</h1>
+        <p class="welcome-note">
+          Welcome to your personal diabetes assistant! I'm here to help you with meal planning, nutrition advice, and diabetes management.
+        </p>
+      </section>
+
+      <!-- CHATBOT SECTION -->
+      <div id="chatbot-container">
+        <div id="chatbox">
+          <div id="chatlog"></div>
+          <button class="scroll-to-top" onclick="scrollToTop()">↑ Scroll to Top</button>
+          <div class="input-container">
+            <textarea id="userInput" placeholder="Ask me anything about diabetes care, meal planning, or nutrition..." 
+              onkeydown="handleKeyDown(event)" rows="1"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h3>Plan Your Meal</h3>
+        <form action="/get_meals" method="POST">
+          <input type="text" name="name" placeholder="Name" required />
+          <select name="diabetes_type" required>
+            <option value="">Diabetes Type</option>
+            <option value="type1">Type 1 Diabetes</option>
+            <option value="type2">Type 2 Diabetes</option>
+            <option value="gestational">Gestational Diabetes</option>
+            <option value="prediabetes">Prediabetes</option>
+          </select>
+          <select name="gender" required>
+            <option value="">Gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+          <input type="number" name="weight" placeholder="Weight (kg)" required />
+          <input type="email" name="email" placeholder="Email" required />
+          <select name="diet" required>
+            <option value="">Diet Type</option>
+            <option value="vegetarian">Vegetarian</option>
+            <option value="vegan">Vegan</option>
+            <option value="gluten free">Gluten Free</option>
+            <option value="ketogenic">Ketogenic</option>
+          </select>
+          <select name="meal_type" required>
+            <option value="">Meal Type</option>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="snack">Snack</option>
+          </select>
+          <input type="number" name="calories" placeholder="Max Calories" required />
+          <select name="allergies" multiple>
+            <option value="">Food Allergies (Select multiple)</option>
+            <option value="dairy">Dairy</option>
+            <option value="eggs">Eggs</option>
+            <option value="fish">Fish</option>
+            <option value="shellfish">Shellfish</option>
+            <option value="tree nuts">Tree Nuts</option>
+            <option value="peanuts">Peanuts</option>
+            <option value="wheat">Wheat</option>
+            <option value="soy">Soy</option>
+          </select>
+          <button type="submit">Get Meal Plan</button>
+        </form>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>Meal Scheduler</h3>
+        <a href="{{ url_for('schedule') }}" class="sidebar-btn">Plan Weekly Meals</a>
+      </div>
+    </aside>
+  </div>
+  
+  <script>
+    // Add loading state to the input
+    function setLoading(isLoading) {
+      const input = document.getElementById('userInput');
+      input.disabled = isLoading;
+      input.placeholder = isLoading ? 'Dia is thinking...' : 'Ask me anything about diabetes care, meal planning, or nutrition...';
+    }
+
+    // Add message to chat with timestamp
+    function addMessage(message, isUser) {
+      const chatlog = document.getElementById('chatlog');
+      const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const messageClass = isUser ? 'user-message' : 'bot-message';
+      const messageHtml = `
+        <div class="message ${messageClass}">
+          <div class="message-content">${message}</div>
+          <div class="message-time">${timestamp}</div>
+        </div>
+      `;
+      chatlog.innerHTML += messageHtml;
+      chatlog.scrollTop = chatlog.scrollHeight;
+      updateScrollButton();
+    }
+
+    // Handle scroll to top button
+    function updateScrollButton() {
+      const chatlog = document.getElementById('chatlog');
+      const scrollButton = document.querySelector('.scroll-to-top');
+      if (chatlog.scrollHeight > chatlog.clientHeight) {
+        scrollButton.classList.add('visible');
+      } else {
+        scrollButton.classList.remove('visible');
+      }
+    }
+
+    function scrollToTop() {
+      const chatlog = document.getElementById('chatlog');
+      chatlog.scrollTop = 0;
+    }
+
+    // Auto-resize textarea
+    function adjustTextareaHeight() {
+      const textarea = document.getElementById('userInput');
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+
+    // Handle keydown events
+    function handleKeyDown(event) {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+      } else if (event.key === 'Enter' && event.shiftKey) {
+        adjustTextareaHeight();
+      }
+    }
+
+    // Handle errors gracefully
+    function handleError(error) {
+      console.error('Error:', error);
+      addMessage("I'm having trouble connecting right now. Please try again later.", false);
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('userInput');
+      const message = input.value.trim();
+      
+      if (!message) return;
+
+      // Clear input and reset height
+      input.value = '';
+      input.style.height = 'auto';
+      
+      addMessage(message, true);
+      setLoading(true);
+
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ message })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.response) {
+          addMessage(data.response, false);
+        } else if (data.status === 'error') {
+          addMessage(data.message || "Sorry, I couldn't process your request. Please try again.", false);
+        } else {
+          throw new Error('Invalid response format');
+        }
+      } catch (error) {
+        handleError(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Handle form submission for meal planning
+    async function handleMealFormSubmit(event) {
+      event.preventDefault();
+      const form = event.target;
+      const formData = new FormData(form);
+      
+      try {
+        const response = await fetch('/get_meals', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          // Create result container
+          const resultContainer = document.createElement('div');
+          resultContainer.className = 'result-content';
+          resultContainer.innerHTML = `
+            <div class="hero-section">
+              <h1>Meal Suggestions for ${data.name}</h1>
+              <p class="welcome-note">Here are your ${data.meal_type} suggestions based on your preferences</p>
+            </div>
+            <div class="ai-analysis">
+              <h3>AI Analysis</h3>
+              <p>${data.ai_analysis}</p>
+            </div>
+            <div class="recipes-container">
+              ${data.recipes.map(recipe => `
+                <div class="recipe-card">
+                  <h3>${recipe.title}</h3>
+                  <img src="${recipe.image}" alt="${recipe.title}" style="max-width: 100%; border-radius: 8px;">
+                  <p>Ready in: ${recipe.readyInMinutes} minutes</p>
+                  <p>Servings: ${recipe.servings}</p>
+                  <a href="${recipe.sourceUrl}" target="_blank" class="view-recipe-btn">View Recipe</a>
+                </div>
+              `).join('')}
+            </div>
+          `;
+
+          // Replace the current content with the results
+          document.querySelector('.main-content').innerHTML = '';
+          document.querySelector('.main-content').appendChild(resultContainer);
+
+          // Add styles for the new content
+          const style = document.createElement('style');
+          style.textContent = `
+            .result-content {
+              padding: 20px;
+              height: 100%;
+              overflow-y: auto;
+              position: relative;
+            }
+            .ai-analysis {
+              background: rgba(255, 255, 255, 0.9);
+              padding: 15px;
+              border-radius: 12px;
+              margin-bottom: 20px;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .ai-analysis h3 {
+              color: #5a4da1;
+              margin-bottom: 10px;
+            }
+            .recipes-container {
+              display: grid;
+              gap: 20px;
+            }
+            .recipe-card {
+              background: rgba(255, 255, 255, 0.9);
+              border-radius: 12px;
+              padding: 15px;
+              margin-bottom: 20px;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              transition: transform 0.3s ease;
+            }
+            .recipe-card:hover {
+              transform: translateY(-2px);
+            }
+            .recipe-image {
+              width: 100%;
+              height: 200px;
+              overflow: hidden;
+            }
+            .recipe-image img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+            .recipe-content {
+              padding: 15px;
+            }
+            .recipe-content h3 {
+              color: #5a4da1;
+              margin: 0 0 10px 0;
+            }
+            .recipe-meta {
+              display: flex;
+              gap: 15px;
+              color: #666;
+              font-size: 0.9em;
+              margin-bottom: 10px;
+            }
+            .recipe-summary {
+              color: #333;
+              margin-bottom: 15px;
+              line-height: 1.5;
+            }
+            .recipe-actions {
+              display: flex;
+              gap: 10px;
+              margin-top: 15px;
+            }
+            .view-recipe-btn {
+              display: inline-block;
+              background: linear-gradient(135deg, #5a4da1 0%, #3a2d8f 100%);
+              color: white;
+              padding: 8px 16px;
+              border-radius: 8px;
+              text-decoration: none;
+              transition: all 0.3s ease;
+              flex: 1;
+              text-align: center;
+            }
+            .view-recipe-btn:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 4px 8px rgba(90, 77, 161, 0.3);
+            }
+            .save-recipe-btn {
+              background: linear-gradient(135deg, #5a4da1 0%, #3a2d8f 100%);
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 8px;
+              cursor: pointer;
+              transition: all 0.3s ease;
+              flex: 1;
+              font-size: 0.9em;
+            }
+            .save-recipe-btn:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 4px 8px rgba(90, 77, 161, 0.3);
+            }
+            .save-recipe-btn.saved {
+              background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            }
+          `;
+          document.head.appendChild(style);
+        } else {
+          throw new Error(data.message || 'Failed to fetch meal suggestions');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to fetch meal suggestions. Please try again.');
+      }
+    }
+
+    // Add scroll to top function
+    function scrollToTop() {
+      const resultContent = document.querySelector('.result-content');
+      if (resultContent) {
+        resultContent.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }
+    }
+
+    // Add event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('userInput');
+      input.addEventListener('input', adjustTextareaHeight);
+      input.addEventListener('keydown', handleKeyDown);
+
+      // Meal form event listener
+      const mealForm = document.querySelector('form[action="/get_meals"]');
+      if (mealForm) {
+        mealForm.addEventListener('submit', handleMealFormSubmit);
+      }
+
+      // Add initial welcome message
+      addMessage("Hello! I'm Dia, your diabetes assistant. How can I help you today?", false);
+    });
+
+    async function saveRecipe(recipe) {
+      try {
+        const response = await fetch('/save_recipe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(recipe)
+        });
+
+        if (response.ok) {
+          const button = event.target;
+          button.textContent = 'Saved!';
+          button.classList.add('saved');
+          button.disabled = true;
+          
+          // Show notification
+          showNotification('Recipe saved successfully!', 'success');
+        } else {
+          throw new Error('Failed to save recipe');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showNotification('Failed to save recipe. Please try again.', 'error');
+      }
+    }
+  </script>
+
+  <footer>
+    &copy; 2025 Diabetes-Friendly Meal Planner. All rights reserved.
+  </footer>
+</body>
+</html>

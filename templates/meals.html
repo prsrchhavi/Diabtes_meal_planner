@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Suggested Meals</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fb;
+            color: #333;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #5a4da1;
+            margin-bottom: 30px;
+        }
+
+        .meal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .meal-card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(90, 77, 161, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .meal-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .meal-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .meal-card h2 {
+            color: #5a4da1;
+            font-size: 1.3em;
+            margin: 10px 0 5px;
+        }
+
+        .meal-card p {
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+
+        .back-button {
+            margin-top: 40px;
+            display: inline-block;
+            background-color: #5a4da1;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #4a3c94;
+        }
+    </style>
+</head>
+<body>
+    <h1>Your Suggested Meals 🍽️</h1>
+
+    {% if meals %}
+        <div class="meal-grid">
+            {% for meal in meals %}
+                <div class="meal-card">
+                    <img src="{{ meal.image }}" alt="{{ meal.title }}">
+                    <h2>{{ meal.title }}</h2>
+                    <p><strong>Calories:</strong> {{ meal.calories }}</p>
+                    <p><strong>Diet:</strong> {{ meal.dietLabel }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No meals found. Try different preferences.</p>
+    {% endif %}
+
+    <a href="/" class="back-button">← Back to Planner</a>
+</body>
+</html>

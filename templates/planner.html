@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Plan Your Meal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="planner-page">
+    <div class="form-container">
+        <h1>Plan Your Meal</h1>
+        <form action="/get_meals" method="POST">
+            <input type="text" name="name" placeholder="Your Name" required>
+            <input type="email" name="email" placeholder="Email Address" required>
+            <input type="number" name="age" placeholder="Age" required>
+            <select name="gender" required>
+                <option value="" disabled selected>Gender</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="other">Other</option>
+            </select>
+            <input type="number" name="weight" placeholder="Weight (kg)" step="0.1" required>
+            <input type="number" name="height" placeholder="Height (cm)" step="0.1" required>
+            
+            <!-- Nutrition Preferences -->
+            <input type="text" name="diet" placeholder="Diet Type (e.g. diabetic, vegetarian)">
+            <input type="text" name="exclude" placeholder="Exclude Ingredients (comma-separated)">
+            <input type="number" name="calories" placeholder="Target Calories (e.g. 1800)">
+            
+            <button type="submit">Get My Meal Plan</button>
+        </form>
+    </div>
+</body>
+</html>
